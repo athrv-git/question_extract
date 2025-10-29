@@ -4,25 +4,27 @@ from io import BytesIO
 import re
 
 @st.cache_data
-def read_questions_from_excel(file_path):
+def read_questions_from_excel(file_path, question_col='Number', answer_col='Name'):
     """
-    Extracts numbered questions from an Excel file with 'Number' and 'Name' columns.
+    Extracts questions from an Excel file using specified column names.
     
     Args:
         file_path (str): Path to the Excel file.
+        question_col (str): Name of the column containing question numbers/IDs.
+        answer_col (str): Name of the column containing question text.
     
     Returns:
-        List[str]: A list of questions in the format 'number question_text'.
+        List[str]: A list of questions in the format 'question_number question_text'.
     """
     xls = pd.ExcelFile(file_path, engine='openpyxl')
     questions = []
 
     for sheet_name in xls.sheet_names:
         df = xls.parse(sheet_name)
-        if 'Number' in df.columns and 'Name' in df.columns:
+        if question_col in df.columns and answer_col in df.columns:
             for _, row in df.iterrows():
-                number = str(row['Number']).strip()
-                name = str(row['Name']).strip()
+                number = str(row[question_col]).strip()
+                name = str(row[answer_col]).strip()
                 questions.append(f"{number} {name}")
     
     return questions
@@ -34,4 +36,3 @@ def save_answers_to_excel(questions, answers):
         df.to_excel(writer, index=False, sheet_name="Q&A")
     output.seek(0)
     return output
-

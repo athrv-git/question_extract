@@ -61,24 +61,53 @@ with st.sidebar:
         st.session_state.sidebar_input = ""  # clear input after send
         st.rerun()
 
+# -----------------------------
+# Column Name Configuration
+# -----------------------------
+st.markdown("### ⚙️ Excel Column Configuration")
+st.markdown("Specify the column names in your Excel file:")
+
+col_config1, col_config2 = st.columns(2)
+with col_config1:
+    question_column = st.text_input(
+        "Question Number Column",
+        value="Number",
+        help="Enter the name of the column containing question numbers/IDs"
+    )
+with col_config2:
+    answer_column = st.text_input(
+        "Question Text Column",
+        value="Name",
+        help="Enter the name of the column containing question text"
+    )
+
+st.markdown("---")
+
+# -----------------------------
+# File Upload
+# -----------------------------
 uploaded_file = st.file_uploader(
-    "Upload an Excel file (.xlsx) with questions in the first column",
+    "Upload an Excel file (.xlsx) with questions",
     type=["xlsx"]
 )
 
 if uploaded_file:
     try:
-        questions = read_questions_from_excel(uploaded_file)
+        questions = read_questions_from_excel(
+            uploaded_file, 
+            question_col=question_column, 
+            answer_col=answer_column
+        )
 
         if not questions:
-            st.warning("No questions found in the first column.")
+            st.warning(f"No questions found using columns '{question_column}' and '{answer_column}'. Please check your column names.")
         else:
             st.success(f"{len(questions)} questions loaded.")
 
             if "answers" not in st.session_state or len(st.session_state.answers) != len(questions):
                 st.session_state.answers = [""] * len(questions)
 
-            st.markdown("### ✍️ Answer the following questions:")
+            st.markdown("### ✏️ Answer the following questions:")
 
             for idx, question in enumerate(questions):
                 with st.container():
@@ -124,4 +153,3 @@ if uploaded_file:
 
     except Exception as e:
         st.error(f"❌ Error reading file: {e}")
-
